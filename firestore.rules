@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function teacher() {
+      return request.auth != null && request.auth.token.email == 'syefirhmh@gmail.com'; // ganti dengan email guru
+    }
+    match /exam/{id} { allow read: if true; allow write: if teacher(); }
+    match /key/{id} { allow read, write: if teacher(); }
+    match /results/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['qids','ver','name','klass','answers','viol','reason','at','uid'])
+        && request.resource.data.name is string && request.resource.data.name.size() <= 100
+        && request.resource.data.klass is string && request.resource.data.klass.size() <= 50;
+      allow read, delete: if teacher();
+    }
+  }
+}
